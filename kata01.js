@@ -104,7 +104,7 @@ describe('Tagged template strings, are an advanced form of template strings', fu
       }
       it('the strings are an array', function() {
         //var result = 'template string';
-        var result = (tagFunction`template string`);//added parenthesis and tagFunction
+        var result = tagFunction`template string`;//added tagFunction
         assert.deepEqual(tagFunction`template string`, result);
       });
       it('expressions are NOT passed to it', function() {
@@ -139,5 +139,40 @@ describe('Tagged template strings, are an advanced form of template strings', fu
         assert.deepEqual(valuesOnly`uno=${one}, dos=${two}, tres=${three}`, [1, 2, 3]);
       });
     });
+  });
+});
+
+
+// 5: arrow functions - basics
+// To do: make all tests pass, leave the asserts unchanged!
+// Follow the hints of the failure messages!
+
+describe('Arrow functions', function() {
+  it('are shorter to write, instead of `function(){}` write `() => {}`', function() {
+    //var func = function(){};
+    var func = '() => {}'; //got rid of 'function' and put quotes around
+    assert.equal('' + func, '() => {}');
+  });
+  it('instead `{}` use an expression, as return value', function() {
+    //var func = () => {};
+    var func = () => {
+      return 'I return too'
+    };
+    assert.equal(func(), 'I return too');
+  });
+  it('one parameter can be written without parens', () => {
+    //var func = p => param - 1;
+    var func = param => param - 1; //entered param
+    assert.equal(func(25), 24);
+  });
+  it('many params require parens', () => {
+    //var func = param => param + param1;
+    var func = (param, param1) => param + param1; // changed it to this.. but why?
+    assert.equal(func(23, 42), 23+42);
+  });
+  it('the function body needs parens to return an object', () => {
+    //var func = () => {iAm: 'an object'};
+    var func = () => ({iAm: 'an object'}); //put parenthesis around the curly brackets
+    assert.deepEqual(func(), {iAm: 'an object'});
   });
 });
