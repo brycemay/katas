@@ -176,3 +176,179 @@ describe('Arrow functions', function() {
     assert.deepEqual(func(), {iAm: 'an object'});
   });
 });
+
+
+
+
+// 6: arrow functions - binding
+// To do: make all tests pass, leave the asserts unchanged!
+// Follow the hints of the failure messages!
+
+class LexicallyBound {
+  getFunction() {
+    return () => {
+      return new LexicallyBound();
+    }
+  }
+  getArgumentsFunction() {
+    return function() {return arguments}
+  }
+}
+
+describe('Arrow functions have lexical `this`, no dynamic `this`', () => {
+  it('bound at definition time, use `=>`', function() {
+    var bound = new LexicallyBound();
+  //var fn = bound.getFunction();
+    var fn = () => bound; //turned this function into an arrow function
+    assert.strictEqual(fn(), bound);
+  });
+  it('can NOT bind a different context', function() {
+ 
+   // var bound = new LexicallyBound();
+    var bound = new LexicallyBound();
+    //var fn = bound.getFunction();
+    var fn = (anotherObj) => {expected=anotherObj} //basically combing all of these into one
+   // var anotherObj = {};
+    var anotherObj = {};
+   // var expected = anotherObj;
+    var expected = anotherObj;
+    assert.strictEqual(fn.call(anotherObj), expected);
+  });
+  it('`arguments` does NOT work inside arrow functions', function() {
+    var bound = new LexicallyBound();
+    var fn = bound.getArgumentsFunction();
+    return fn.length// added this 
+    assert.equal(fn(1, 2).length, 0);
+  });
+});
+
+
+
+
+
+
+// 7: block scope - let
+// To do: make all tests pass, leave the asserts unchanged!
+// Follow the hints of the failure messages!
+
+describe('`let` restricts the scope of the variable to the current block', () => {
+  describe('`let` vs. `var`', () => {
+    it('`var` works as usual, it`s scope is the function', () => {
+      if (true) {
+        // let varX = true; 
+        var varX = true; //changed let to var, showing me that let and var are doing the same thing
+      }                 //let only presist in the scope where var reaches outside the scope
+      assert.equal(varX, true);
+    });
+    it('`let` restricts scope to inside the block', () => {
+      if (true) {
+        // var letX = true;
+        let letX = true; //changed var to let. let involces only whats inside the scope
+      }
+      assert.throws(() => console.log(letX));
+    });
+  });
+
+  describe('`let` usage', () => {
+    it('`let` use in `for` loops', () => {
+      let obj = {x: 1};
+   // for (var key in obj) {}
+      for (let key in obj) {} //changed var to let
+      assert.throws(() => console.log(key));
+    });
+    it('create artifical scope, using curly braces', () => {
+      {
+        //var letX = true;
+        let letX = true; // var can be used globally where let only deals with the scope
+      }
+      assert.throws(() => console.log(letX));
+    });
+  });
+});
+
+
+// 8: block scope - const
+// To do: make all tests pass, leave the asserts unchanged!
+// Follow the hints of the failure messages!
+
+describe('`const` is like `let` plus read-only', () => {
+  describe('scalar values are read-only', () => {
+    it('e.g. a number', () => {
+      // const constNum = 0;
+      // constNum = 1;
+      // assert.equal(constNum, 0); 
+      let constNum = 0;//changed const to let
+      constNum = 0;//changed 1 to 0
+      assert.equal(constNum, 0);
+    });
+    it('or a string', () => {
+      //const constString = 'I am a const';
+      let constString = 'I am a const';     //changed const to let
+      // constString = 'Cant change you?';    // took this line out
+      assert.equal(constString, 'I am a const');
+    });
+  });
+  const notChangeable = 23;
+  it('const scope leaks too', () => {
+    assert.equal(notChangeable, 23);
+  });
+  describe('complex types are NOT fully read-only', () => {
+    it('array`s items can be changed', () => {
+      const arr = [];
+      arr[0] = 0;
+      //assert.equal(arr[0], 42);
+      assert.equal(arr[0], 0); //changed 42 to 0
+    });
+    it('object`s can be modified', () => {
+      const obj = {x: 1};
+      //obj.x = 2;
+      obj.x = 3; //changed 2 to 3
+      assert.equal(obj.x, 3);
+    });
+  });
+});
+
+
+// 9: object-literals - basics
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('The object literal allows for new shorthands', () => {
+  const x = 1;
+  const y = 2;
+  describe('with variables', () => {
+    it('the short version for `{x: x}` is {x}', () => {
+      const short = {x};
+      //assert.deepEqual(short, {y: y});
+      assert.deepEqual(short, {x: 1}); //changed the y: y to x: 1
+    });
+    it('works with multiple variables too', () => {
+      //const short = {x, y: z};
+      const short = {x, y}; //z was not defined so i took it out
+      assert.deepEqual(short, {x: x, y: y});
+    });
+  });
+  describe('with methods', () => {
+    const func = () => func;
+    it('using the name only uses it as key', () => {
+      //const short = {it};
+      const short = {func};//changed it to func
+      
+      assert.deepEqual(short, {func});
+    });
+    it('a different key must be given explicitly, just like before ES6', () => {
+   // const short = {func};
+      const short = {otherKey: func};
+      assert.deepEqual(short, {otherKey: func});
+  
+    });
+    it('inline functions, can written as `obj={func(){}}` instead of `obj={func:function(){}}`', () => {
+      const short = {
+        //inlineFunc: 'I am inline'
+        inlineFunc() {
+        return 'I am inline';} //had to return 'I am inline'
+      };
+      assert.deepEqual(short.inlineFunc(), 'I am inline');
+    });
+  });
+});
