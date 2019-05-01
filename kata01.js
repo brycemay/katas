@@ -399,3 +399,69 @@ describe('Destructuring arrays makes shorter code', () => {
     assert.deepEqual([a, b], [1, 2]);
   });
 });
+
+
+// 11: destructuring - string
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Destructuring also works on strings', () => {
+  it('destructure every character, just as if the string was an array', () => {
+  //let a, b, c = 'abc';
+    let [a, b, c] = 'abc';
+    assert.deepEqual([a, b, c], ['a', 'b', 'c']);
+  });
+  it('missing characters are undefined', () => {
+  //const [a, c] = 'ab';
+    const [a,b, c] = 'ab'; //added a b value so c is undefined
+    assert.equal(c, void 0);
+  });
+  it('unicode character work too', () => {
+  //const [space, coffee] = 'a ☕';
+    const [space, coffee] = ' ☕'; //0, 1, 2. space is index 0, the space between a and coffe cup is index 1, and coffe cup is index 2
+    assert.equal(coffee, '\u{2615}'); //i made the coffee equal index 1
+  });
+});
+
+
+
+// 12: destructuring - object
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Destructure objects', () => {
+  it('by surrounding the left-hand variable with `{}`', () => {
+    const {x} = {x: 1}; //added curly braces to the x
+    assert.equal(x, 1);
+  });
+  describe('nested', () => {
+    it('multiple objects', () => {
+      const magic = {first: 23, second: 42};
+    //const {magic: [second]} = {magic};
+      const {magic: {second}} = {magic}; //put curly braces around 'second' because we want to pull out what second is
+      assert.equal(second, 42);
+    });
+    it('object and array', () => {
+    //const {z:[x]} = {z: [23, 42]};
+      const {z:[x]} = {z: [42]}; // got rid of the 23 so x automatically equals 42
+      assert.equal(x, 42);
+    });
+    it('array and object', () => {
+    //const [,{lang}] = [null, [{env: 'browser', lang: 'ES6'}]];
+      const [,[{lang}]] = [null, [{env: 'browser', lang: 'ES6'}]]; //added 2 more brackets to get into that nested array
+      assert.equal(lang, 'ES6');
+    });
+  });
+  describe('interesting', () => {
+    it('missing refs become undefined', () => {
+    //const {z} = {x: 1, z: 2};
+      const {z} = {x: 1, y: 2}; //changed z:2 to y:2
+      assert.equal(z, void 0);
+    });
+    it('destructure from builtins (string)', () => {
+    //const {substr} = 1;
+      const {substr} = '1'; //changed it to a string
+      assert.equal(substr, String.prototype.substr);
+    });
+  });
+});
