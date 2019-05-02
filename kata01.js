@@ -499,3 +499,163 @@ describe('When destructuring you can also provide default values', () => {
     assert.equal(b, 2);
   });
 });
+
+// 14: destructuring - parameters
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Destructuring function parameters', () => {
+  describe('destruct parameters', () => {
+    it('multiple params from object', () => {
+    //const fn = ({id}, {name}) => {
+      const fn = ({id, name}) => {
+        assert.equal(id, 42);
+        assert.equal(name, 'Wolfram');
+      };
+      const user = {name: 'Wolfram', id: 42};
+      fn(user);
+    });
+    it('multiple params from array/object', () => {
+    //const fn = ([{name}]) => {
+      const fn = ([,{name}]) => { //added a comma to grab the second index
+        assert.equal(name, 'Alice');
+      };
+      const users = [{name: 'nobody'}, {name: 'Alice', id: 42}];
+      fn(users);
+    });
+  });
+  describe('default values', () => {
+    it('for simple values', () => {
+   // const fn = (id, name='Bobby') => {
+      const fn = (id, name='Bob') => { //changed bobby to bob
+        assert.strictEqual(id, 23);
+        assert.strictEqual(name, 'Bob');
+      };
+      fn(23);
+    });
+    it('for a missing array value', () => {
+      const defaultUser = {id: 23, name: 'Joe'};
+      //const fn = ([user]) => {
+      const fn = ([user = {id: 23, name: 'Joe'}]) => {
+        assert.deepEqual(user, defaultUser);
+      };
+      fn([]);
+    });
+    it('mix of parameter types', () => {
+    //const fn = (id, [arr], {obj}) => {
+      const fn = (id=1, [arr=2], {obj=3}) => { //assigning the values to the numbers
+        assert.equal(id, 1);
+        assert.equal(arr, 2);
+        assert.equal(obj, 3);
+      };
+      fn(void 0, [], {});
+    });
+  });
+});
+
+
+// 15: destructuring - assign
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Assign object property values to new variables while destructuring', () => {
+  describe('for simple objects', function() {
+    it('use a colon after the property name, like so `propertyName: newName`', () => {
+    //const {x: newName} = {x: 1};
+      const {x: y} = {x: 1}; //just assigning the x value to y
+      assert.equal(y, 1);
+    });
+    it('assign a new name and give it a default value using `= <default value>`', () => {
+      //const {x: y=2} = {y: 23};
+      const {x: y=42} = {y: 23}; //
+      assert.equal(y, 42);
+    });
+  });
+  describe('for function parameter names', function() {
+    it('do it the same way, with a colon behind it', () => {
+    //const fn = ({x}) => {
+      const fn = ({x:y}) => { //
+        assert.equal(y, 1);
+      };
+      fn({x: 1});
+    });
+    it('giving it a default value is possible too, like above', () => {
+    //const fn = ({x: z=3}) => {
+      const fn = ({x: y=3}) => { //
+        assert.equal(y, 3);
+      };
+      fn({});
+    });
+  });
+});
+
+// 16: object-literal - computed properties
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Object literal properties may be computed values', () => {
+  it('a computed property `x` needs to be surrounded by `[]`', () => {
+    
+    const propertyName = 'x';
+ // const obj = {propertyName: 1};
+    const obj = {[propertyName]: 1}; //wrapping the property name
+    assert.equal(obj.x, 1);
+  });
+  it('can also get a function assigned', () => {
+    const key = 'func';
+  //const obj = {[key]: 'seven'};
+    const obj = {[key]() {
+      return 'seven'
+    }};
+    assert.equal(obj.func(), 'seven');
+  });
+  it('the key may also be the result of a function call', () => {
+    const getName = () => 'propertyName';
+ // const obj = {[getName]() {return 'seven'}};
+    const obj = {[getName()]() {return 'seven'}}; //called the function inside a variable
+    assert.equal(obj.propertyName(), 'seven');
+  });
+  it('the key can also be constructed by an expression', () => {
+  //const what = 'Key';
+    const what = 'Name';
+  //const obj = {['proper' + what]: null};
+    const obj = {['property' + what]: null};
+    assert('propertyName' in obj);
+  });
+  it('accessor keys can be computed names too', () => {
+    const obj = {
+    //set ['key'](_) {return 1},
+      get ['key']() {return 1},
+      
+    };
+    assert.equal(obj.key, 1);
+  });
+});
+
+
+// 17: unicode - in strings
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Unicode in strings', () => {
+  it('are prefixed with `\\u` (one backslash and u)', () => {
+  //const nuclear = 2622;
+    const nuclear = '\u2622';//unicode being letters and numbers to make symbols
+    assert.equal(nuclear, '☢');
+  });
+  it('value is 4 bytes/digits', () => {
+  //const nuclear = '\u26222';
+    const nuclear = '\u2622'; //deleted the additional '2'
+    assert.equal(`no more ${nuclear}`, 'no more ☢');
+  });
+  it('even "normal" character`s values can be written as hexadecimal unicode', () => {
+  //const nuclear = `\u006B\u006A more \u2622`;
+    const nuclear = `\u006E\u006F more \u2622`; //E and F are normal lettersm for unicode
+    assert.equal(nuclear, 'no more ☢');
+  });
+  it('curly braces may surround the value', () => {
+  //const nuclear = `\u{0000000006E}\u00006F more \u2622`;
+    const nuclear = `\u{00006E}\u{00006F} more \u2622`; //added curly braces to surround the value
+    assert.equal(nuclear, 'no more ☢');
+  });
+});
