@@ -723,3 +723,209 @@ describe('Spread syntax with strings', () => {
     assert.deepEqual(max, 5);
   });
 });
+
+// 22: class - creation
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Class creation', () => {
+  it('is as simple as `class XXX {}`', function() {
+  //let TestClass;
+    class TestClass{}//changed let to class
+    const instance = new TestClass();
+    assert.equal(typeof instance, 'object');
+  });
+  it('a class is block scoped', () => {
+  //class Inside {}
+    {}
+    {class Inside {}}
+    assert.equal(typeof Inside, 'undefined');
+  });
+  it('the `constructor` is a special method', function() {
+    class User {
+    //constructor(id) {}
+      constructor(id) {
+        this.id = id; //this allows you to get into the scope
+      }
+    }
+    const user = new User(42);
+    assert.equal(user.id, 42);
+  });
+  it('defining a method by writing it inside the class body', function() {
+    //class User {
+  //  }
+    class User {
+      writesTests() {
+        return false;
+      }
+    }
+    const notATester = new User();
+    assert.equal(notATester.writesTests(), false);
+  });
+  it('multiple methods need no commas (opposed to object notation)', function() {
+    class User {
+      wroteATest() { this.everWroteATest = true; }
+      wroteATest() { this.everWroteATest = true; }
+   // isLazy() {  }
+      isLazy() { return !this.everWroteATest }//?
+    }
+    const tester = new User();
+    assert.equal(tester.isLazy(), true);
+    tester.wroteATest();
+    assert.equal(tester.isLazy(), false);
+  });
+  it('anonymous class', () => {
+   // const classType = typeof {
+    const classType = typeof class{};//?? I have no clue
+    assert.equal(classType, 'function');
+  });
+});
+
+
+// 22: class - creation
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Class creation', () => {
+  it('is as simple as `class XXX {}`', function() {
+  //let TestClass;
+    class TestClass{}//changed let to class
+    const instance = new TestClass();
+    assert.equal(typeof instance, 'object');
+  });
+  it('a class is block scoped', () => {
+  //class Inside {}
+    {}
+    {class Inside {}}
+    assert.equal(typeof Inside, 'undefined');
+  });
+  it('the `constructor` is a special method', function() {
+    class User {
+    //constructor(id) {}
+      constructor(id) {
+        this.id = id; //this allows you to get into the scope
+      }
+    }
+    const user = new User(42);
+    assert.equal(user.id, 42);
+  });
+  it('defining a method by writing it inside the class body', function() {
+    //class User {
+  //  }
+    class User {
+      writesTests() {
+        return false;
+      }
+    }
+    const notATester = new User();
+    assert.equal(notATester.writesTests(), false);
+  });
+  it('multiple methods need no commas (opposed to object notation)', function() {
+    class User {
+      wroteATest() { this.everWroteATest = true; }
+      wroteATest() { this.everWroteATest = true; }
+   // isLazy() {  }
+      isLazy() { return !this.everWroteATest }
+    }
+    const tester = new User();
+    assert.equal(tester.isLazy(), true);
+    tester.wroteATest();
+    assert.equal(tester.isLazy(), false);
+  });
+  it('anonymous class', () => {
+   // const classType = typeof {
+    const classType = typeof class{};//?? I have no clue
+    assert.equal(classType, 'function');
+  });
+});
+
+// 23: class - accessors
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Class accessors (getter and setter)', () => {
+  it('a getter is defined like a method prefixed with `get`', () => {
+    class MyAccount {
+    //get money() { return Infinity; }
+      get balance() { return Infinity; }
+    }
+    assert.equal(new MyAccount().balance, Infinity);
+  });
+  it('a setter has the prefix `set`', () => {
+    class MyAccount {
+      get balance() { return this.amount; }
+      set balance(amount) { this.amount = amount; }
+    }
+    const account = new MyAccount();
+  //account.balance = 42;
+    account.balance = 23;
+    assert.equal(account.balance, 23);
+  });
+  
+  describe('dynamic accessors', () => {
+    it('a dynamic getter name is enclosed in `[]`', function() {
+      const balance = 'yourMoney';
+      class YourAccount {
+      //get [getterName]() { return -Infinity; }
+        get [balance]() { return -Infinity; }
+      }
+      assert.equal(new YourAccount().yourMoney, -Infinity);
+    });
+    it('a dynamic setter name as well', function() {
+      const propertyName = 'balance';
+      class MyAccount {
+        get [propertyName]() { return this.amount; }
+      //set propertyName(amount) { this.amount = 23; }
+        set [propertyName](amount) { this.amount = 23; } //wrapped the seter name in []
+      }
+      const account = new MyAccount();
+      account.balance = 42;
+      assert.equal(account.balance, 23);
+    });
+  });
+});
+
+
+
+// 24: class - static keyword
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Inside a class you can use the `static` keyword', () => {
+  describe('for methods', () => {
+    class UnitTest {}
+    it('a static method just has the prefix `static`', () => {
+      class TestFactory {
+       //makeTest() { return new UnitTest(); }
+        static makeTest() { return new UnitTest(); }
+      }
+      assert.ok(TestFactory.makeTest() instanceof UnitTest);
+    });
+    it('the method name can be dynamic/computed at runtime', () => {
+      //const methodName = 'makeTest';
+      const methodName = 'createTest';
+      class TestFactory {
+        static [methodName]() { return new UnitTest(); }
+      }
+      assert.ok(TestFactory.createTest() instanceof UnitTest);
+    });
+  });
+  describe('for accessors', () => {
+    it('a getter name can be static, just prefix it with `static`', () => {
+      class UnitTest {
+       //get testType() { return 'unit'; }
+       static get testType() { return 'unit'; }
+      }
+      assert.equal(UnitTest.testType, 'unit');
+    });
+    it('even a static getter name can be dynamic/computed at runtime', () => {
+      const type = 'test' + 'Type';
+      class IntegrationTest {
+       //static get type() { return 'integration'; }
+       static get [type]() { return 'integration'; } //have no clue
+      }
+      assert.ok('testType' in IntegrationTest);
+      assert.equal(IntegrationTest.testType, 'integration');
+    });
+  });
+});
