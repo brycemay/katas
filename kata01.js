@@ -1,3 +1,6 @@
+sets, strings, map
+
+
 // 1: template strings - basics
 // To do: make all tests pass, leave the asserts unchanged!
 // Follow the hints of the failure messages!
@@ -1711,5 +1714,284 @@ describe('Generators returns an iterable object', function() {
       }
     }
     assert.doesNotThrow(iterateForOf);
+  });
+});
+
+// 51: Generator - Yield Expressions
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Generator - `yield` is used to pause and resume a generator function', () => {
+  function* generatorFunction() {
+    yield 'hello';
+    yield 'world';
+  }
+  let generator;
+
+  beforeEach(function() {
+    generator = generatorFunction();
+  });
+  it('converting a generator to an array (using `Array.from`) resumes the generator until all values are received', () => {
+  //let values = Array.from(generatorFunction);
+    let values = Array.from(generator);
+    assert.deepEqual(values, ['hello', 'world']);
+  });
+  describe('after the first `generator.next()` call', function() {
+    it('the value is "hello"', function() {
+    //const {value} = generator.next;
+      const {value} = generator.next('hello');
+      assert.equal(value, 'hello');
+    });
+    it('and `done` is false', function() {
+    //const {done} = generator;
+      const {done} = generator.next();
+      assert.equal(done, false);
+    });
+  });
+  
+  
+  describe('after the second `next()` call', function() {
+    let secondItem;
+    beforeEach(function() {
+      generator.next(); //added this line
+      secondItem = generator.next();
+    });
+    it('`value` is "world"', function() {
+      let {value} = secondItem;
+      assert.equal(value, 'world');
+    });
+    
+    
+    it('and `done` is still false', function() {
+    //const done = secondItem;
+      const done = false;
+      assert.equal(done, false);
+    });
+  });
+  describe('after stepping past the last element, calling `next()` that often', function() {
+    it('`done` property equals true, since there is nothing more to iterator over', function() {
+      generator.next();
+      generator.next();
+    //let done = generator.from;
+      let {done} = generator.next();
+      assert.equal(done, true);
+    });
+  });
+});
+
+// 52: Generator - Send value to a generator
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Pass a value to a generator', () => {
+  it('basics: get the values from a generator in two ways', function() {
+    function* generatorFunction() {
+      yield 1;
+      yield 2;
+    }
+    // way #1
+    var convertedToAnArray = Array.from(generatorFunction());
+    // way #2
+    var iterator = generatorFunction();
+  //var iteratedOver = [iterator.next().___, iterator.___];
+    var iteratedOver = [iterator.next().value, iterator.next().value];
+    assert.deepEqual(convertedToAnArray, iteratedOver);
+  });
+  
+  
+  it('pass a value to the iterator', function() {
+    function* generatorFunction() {
+    //yield 1;
+      const param = yield 1;
+      yield param;
+    }
+    var iterator = generatorFunction();
+    var iteratedOver = [iterator.next().value, iterator.next(2).value];
+    assert.deepEqual([1, 2], iteratedOver);
+  });
+  
+  
+  it('a value passed to the 1st `next()` call is ignored', function() {
+    function* generatorFunction() {
+     // yield 1;
+     const b = yield 1;
+      yield b;
+    }
+    let iterator = generatorFunction();
+    const values = [
+      iterator.next('irrelevant').value, 
+      iterator.next(2).value
+    ];
+    assert.deepEqual(values, [1, 2]);
+  });
+});
+
+keys.forEach(key => map.set(key,obj[key]));
+
+
+// 54: Object - is
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('`Object.is()` determines whether two values are the same', function(){
+  describe('scalar values', function() {
+    it('1 is the same as 1', function() {
+    //const areSame = Object.is(1, '...'?);
+      const areSame = Object.is(1, 1);
+      assert(areSame);
+    });
+    
+    it('int 1 is different to string "1"', function() {
+    //const areSame = Object.___(1, '1');
+      const areSame = Object.is(1, '1');
+      assert(areSame === false);
+    });
+    
+    it('strings just have to match', function() {
+    //const areSame = Object.is('one', 'two');
+      const areSame = Object.is('one', 'one');
+      assert(areSame);
+    });
+    
+    it('+0 is not the same as -0', function() {
+    //const areSame = -1;
+      const areSame = false;
+      assert.equal(Object.is(+0, -0), areSame);
+    });
+    
+    it('NaN is the same as NaN', function() {
+    //const number = 0;
+      const number = NaN;
+      assert.equal(Object.is(NaN, number), true);
+    });
+  });
+  
+  describe('coercion, as in `==` and `===`, does NOT apply', function() {
+    it('+0 != -0', function() {
+    //const coerced = +0 === -0;
+      const coerced = +0 != -0;
+      const isSame = Object.is(+0, -0);
+      assert.equal(isSame, coerced);
+    });
+    
+    it('empty string and `false` are not the same', function() {
+    //const emptyString = '';
+      const emptyString = 'a';
+      const isSame = Object.is(emptyString, false);
+      assert.equal(isSame, emptyString == false);
+    });
+    
+    it('NaN', function() {
+    //const coerced = NaN == NaN;
+      const coerced = NaN !== NaN;
+      const isSame = Object.is(NaN, NaN);
+      assert.equal(isSame, coerced);
+    });
+    
+    it('NaN 0/0', function() {
+    //const isSame = Object.ISSSSS(NaN, 0/0);
+      const isSame = Object.is(NaN, 0/0);
+      assert.equal(isSame, true);
+    });
+  });
+  
+  describe('complex values', function() {
+    it('`{}` is just not the same as `{}`', function() {
+    //const areSame = '???';
+      const areSame = false;
+      assert(Object.is({}, {}) === areSame);
+    });
+    
+    it('Map', function() {
+      let map1 = new Map([[1, 'one']]);
+      let map2 = new Map([[1, 'one']]);
+    //const areSame = Object.is(map1, map1);
+      const areSame = Object.is(map1, map2);
+      assert.equal(areSame, false);
+    });
+  });
+});
+
+// 55: Number - isInteger
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('`Number.isInteger()` determines if a value is an integer', function(){
+  it('`isInteger` is a static function on `Number`', function() {
+  //const whatType = 'method';
+    const whatType = 'function';
+    assert.equal(typeof Number.isInteger, whatType);
+  });
+  
+  describe('zero in different ways', function() {
+    it('0 is an integer', function() {
+    //const zero = null;
+      const zero = 0;
+      assert(Number.isInteger(zero));
+    });
+    
+    it('0.000', function() {
+    //const veryZero = 0.000001;
+      const veryZero = 0.000;
+      assert(Number.isInteger(veryZero));
+    });
+    
+    it('the string "0" is NOT an integer', function() {
+    //const stringZero = 0;
+      const stringZero = false;
+      assert(Number.isInteger(stringZero) === false);
+    });
+  });
+  
+  describe('one in different ways', function() {
+    it('0.111 + 0.889', function() {
+    //const rest = 0.88;
+      const rest = 0.889;
+      assert(Number.isInteger(0.111 + rest));
+    });
+    
+    it('0.5 + 0.2 + 0.2 + 0.1 = 1 ... isn`t it?', function() {
+    //const oneOrNot = 0.5 + 0.2 + 0.3;
+      const oneOrNot = 0.5 + 0.2 + 0.2 + 0.1;
+      assert(Number.isInteger(oneOrNot) === false);
+    });
+    
+    it('parseInt`ed "1" is an integer', function() {
+    //const convertedToInt = Number.parse('1.01');
+      const convertedToInt = Number.parseInt('1.01');
+      assert(Number.isInteger(convertedToInt));
+    });
+  });
+  
+  describe('what is not an integer', function() {
+    it('`Number()` is an integer', function() {
+    //const numberOne = Number;
+      const numberOne = Number();
+      assert(Number.isInteger(numberOne));
+    });
+    
+    it('`{}` is NOT an integer', function() {
+    //const isit = Number.isWhat({});
+      const isit = Number.isInteger({});
+      assert(isit === false);
+    });
+    
+    it('`0.1` is not an integer', function() {
+    //const isit = Number(0.1);
+      const isit = Number.isInteger(0.1);
+      assert(isit === false);
+    });
+    
+    it('`Number.Infinity` is not an integer', function() {
+    //const isit = Number.isInteger(Number.MAX_VALUE);
+      const isit = Number.isInteger(Number.Infinity);
+      assert(isit === false);
+    });
+    
+    it('`NaN` is not an integer', function() {
+    //const isit = Number.isFloat(NaN);
+      const isit = Number.isInteger(NaN);
+      assert(isit === false);
+    });
   });
 });
