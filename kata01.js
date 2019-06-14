@@ -929,3 +929,749 @@ describe('Inside a class you can use the `static` keyword', () => {
     });
   });
 });
+
+// 25: class - extends
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Classes can inherit from another using `extends`', () => {
+  describe('the default super class is `Object`', () => {
+    it('a `class A` is an instance of `Object`', () => {
+      //let A
+      class A {}
+      assert.equal(new A() instanceof Object, true);
+    });
+    it('when B extends A, B is also instance of `Object`', () => {
+      class A {} 
+      //class B {}
+      class B extends A {}
+      assert.equal(new B() instanceof A, true);
+      assert.equal(new B() instanceof Object, true);
+    });
+    it('a class can extend `null`, and is not an instance of Object', () => {
+    //class NullClass extends Object {}
+      class NullClass extends null {}
+      let nullInstance = new NullClass();
+      assert.equal(nullInstance instanceof Object, false);
+    });
+  });
+  describe('instance of', () => {
+    it('when B inherits from A, `new B()` is also an instance of A', () => {
+     //let A;
+      class A{}
+      class B extends A {}
+      assert.equal(new B() instanceof A, true);
+    });
+    it('extend over multiple levels', () => {
+      class A {}
+      class B extends A {} //added this line
+      class C extends B {}
+      assert.equal(new C instanceof A, true);
+    });
+  });
+});
+
+
+// 26: class - more-extends
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Classes can inherit from another', () => {
+  it('extend an `old style` "class", a function, still works', () => {
+    let A = function (){};
+    class B extends A {}
+    assert.equal(new B() instanceof A, true);
+  });
+  
+  describe('prototypes are as you know them', () => {
+    class A {}
+    class B extends A {}
+    it('A is the prototype of B', () => {
+      //const isIt = A.isPrototypeOf(null);
+      const isIt = A.isPrototypeOf(B);
+      assert.equal(isIt, true);
+    });
+    it('A`s prototype is also B`s prototype', () => {
+      //const proto = B;
+      const proto = B.prototype;
+      // Remember: don't touch the assert!!! :)
+      assert.equal(A.prototype.isPrototypeOf(proto), true);
+    });
+  });
+
+  describe('`extends` using an expression', () => {
+    it('e.g. the inline assignment of the parent class', () => {
+      let A;
+    //class B extends (A = {}) {}
+      class B extends (A = class{}) {}
+      assert.equal(new B() instanceof A, true);
+    });
+    it('or calling a function that returns the parent class', () => {
+      const returnParent = (beNull) => beNull ? null : class {};
+    //class B extends returnParent {}
+      class B extends (returnParent(true)) {}
+      assert.equal(Object.getPrototypeOf(B.prototype), null);
+    });
+  });
+});
+
+// 27: class - super inside a method
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Inside a class use `super` to access parent methods', () => {
+  it('use of `super` without `extends` fails (already when transpiling)', () => {
+    //class A {hasSuper() { return super; }}
+    class A {hasSuper() { return false; }} //can;t use super without extends
+    assert.equal(new A().hasSuper(), false);
+  });
+  it('`super` with `extends` calls the method of the given name of the parent class', () => {
+    class A {hasSuper() { return true; }}
+  //class B extends A {hasSuper() { return super.hasSuper; }}
+    class B extends A {hasSuper() { return super.hasSuper(); }}
+    assert.equal(new B().hasSuper(), true);
+  });
+  it('when overridden a method does NOT automatically call its super method', () => {
+    class A {hasSuper() { return true; }}
+  //class B extends A {hasSuper() { return 'nothing'; }}
+    class B extends A {hasSuper() { return undefined; }}
+    assert.equal(new B().hasSuper(), void 0);
+  });
+  it('`super` works across any number of levels of inheritance', () => {
+    class A {iAmSuper() { return true; }}
+    class B extends A {}
+  //class C extends B {iAmSuper() { return iAmSuper(); }}
+    class C extends B {iAmSuper() { return super.iAmSuper(); }}//iAmSuper was not defined
+    assert.equal(new C().iAmSuper(), true);
+  });
+  it('accessing an undefined member of the parent class returns `undefined`', () => {
+    class A {}
+  //class B extends A {getMethod() { return super.constructor; }}
+    class B extends A {getMethod() { return undefined; }} //just made sense
+    assert.equal(new B().getMethod(), void 0);
+  });
+});
+
+// 28: class - super in constructor
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Inside a class`s constructor `super()` can be used', () => {
+  it('if you `extend` a class, use `super()` to call the parent constructor', () => {
+      class A {constructor() { this.levels = 1; }}
+      //class B {
+      class B extends A {
+        constructor() {
+          super(); //added super... super keyword in Java is a reference variable which is used to refer immediate parent class object
+          this.levels++; 
+        }
+      }
+      assert.equal(new B().levels, 2);
+    });
+    it('`super()` may also take params', () => {
+      class A {constructor(startValue=1, addTo=1) { this.counter = startValue + addTo; }}
+      class B extends A {
+        constructor(...args) { 
+        //super();
+          super(...args);
+          this.counter++; 
+        }
+      }
+      assert.equal(new B(42, 2).counter, 45);
+    });
+    it('it is important where you place your `super()` call!', () => {
+      class A {inc() { this.countUp = 1; }}
+      class B extends A {
+        inc() {
+          
+          this.countUp = 2;
+          super.inc();// moved this line from 2 lines above
+          return this.countUp;
+        }
+      }
+      assert.equal(new B().inc(), 1);
+    });
+    it('use `super.constructor` to find out if there is a parent constructor', () => {
+      class ParentClassA {constructor() {"parent"}}
+      class B extends ParentClassA {
+        constructor() {
+          super();
+          this.isTop = '' + super.constructor; //constructor was spelt wrong
+        }
+      }
+      assert(new B().isTop.includes('ParentClassA'), new B().isTop);
+    });
+  });
+  
+
+   it('and we also get the object`s key as second parameter', function() {
+    const arr = Array.from(arrayLike, (value,key) => `${key}=${value}`);
+    assert.deepEqual(arr, ['0=one', '1=two']);
+  });
+});
+
+// 30: array - `Array.of` static method
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('`Array.of` creates an array with the given arguments as elements', () => {
+  it('dont mix it up with `Array(10)`, where the argument is the array length', () => {
+  //const arr = Array(10);
+    const arr = Array.of(10); // .of assigns 10, which is an argument, to an element
+    assert.deepEqual(arr, [10]);
+  });
+  it('puts all arguments into array elements', () => {
+  //const arr = Array.of();
+    const arr = Array.of(1, 2); // assigned 1, 2 to be an element
+    assert.deepEqual(arr, [1, 2]);
+  });
+  it('takes any kind and number of arguments', () => {
+    const starter = [1, 2];
+    const end = [3, '4'];
+  //const arr = Array.of(...starter, ...end);
+    const arr = Array.of([...starter], ...end); //added square brackets
+    assert.deepEqual(arr, [[1, 2], 3, '4']);
+  });
+});
+
+
+// 31: array - `Array.prototype.fill` method
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('`Array.prototype.fill` can fill up an array with one value', () => {
+  it('`fill(0)` will populate `0` into each array element', function() {
+  //const arr = new Array(3).fill();
+    const arr = new Array(3).fill(0);// assigned .fill to 0 and had the array set to 3
+    assert.deepEqual(arr, [0, 0, 0]);
+  });
+  it('fill only changes content, adds no new elements', function() {
+  //const arr = [undefined].fill(0);
+    const arr = Array.fill(0); //only made sense just by looking at it
+    assert.deepEqual(arr, []);
+  });
+  it('second parameter to `fill()` is the position where to start filling', function() {
+  //const fillPosition = 0;
+    const fillPosition = 2;
+    const arr = [1,2,3].fill(42, fillPosition);
+    assert.deepEqual(arr, [1, 2, 42]);
+  });
+  it('third parameter is the position where filling stops', function() {
+    const fillStartAt = 1;
+  //const fillEndAt = 1;
+    const fillEndAt = 2;
+    const arr = [1,2,3].fill(42, fillStartAt, fillEndAt);
+    assert.deepEqual(arr, [1, 42, 3]);
+  });
+});
+
+
+// 32: array - `Array.prototype.find` 
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('`Array.prototype.find` makes finding items in arrays easier', () => {
+  it('takes a compare function', function() {
+  //const found = [true].find(true);
+    const found = [false, true].find(x => x === true);
+    assert.equal(found, true);
+  });
+  it('returns the first value found', function() {
+  //const found = [0, 1].find(item => item > 1);
+    const found = [0, 1, 2].find(item => item > 1);
+    assert.equal(found, 2);
+  });
+  it('returns `undefined` when nothing was found', function() {
+  //const found = [1, 2, 3].find(item => item === 2);
+    const found = [1, 2, 3].find(item => item === 5);
+    assert.equal(found, void 0);
+  });
+  it('combined with destructuring complex compares become short', function() {
+    const bob = {name: 'Bob'};
+    const alice = {name: 'Alice'};
+  //const found = [bob, alice].find(({name}) => name);
+    const found = [bob, alice].find(({name:{length}}) => length === alice.name.length);
+    assert.equal(found, alice);
+  });
+});
+
+
+// 33: array - `Array.prototype.findIndex` 
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('`Array.prototype.findIndex` makes finding items in arrays easier', () => {
+  it('takes a compare function, returns the index where it returned true', function() {
+  //const foundAt = [false, true].findIndex();
+    const foundAt = [false, true].findIndex(item => item);
+    assert.equal(foundAt, 1);
+  });
+  it('returns the first position it was found at', function() {
+  //const foundAt = [0, 1, 1, 1].findIndex(item => item = 1);
+    const foundAt = [0, 1, 1, 1].findIndex(item => item);
+    assert.equal(foundAt, 1);
+  });
+  it('returns `-1` when nothing was found', function() {
+  //const foundAt = [1, 2, 3].findIndex(item => item > 1);
+    const foundAt = [1, 2, 3].findIndex(item => item > 3);
+    assert.equal(foundAt, -1);
+  });
+  it('the findIndex callback gets the item, index and array as arguments', function() {
+    const three = 3;
+    const containsThree = arr => arr.indexOf(three) > -1;
+  //function theSecondThree(index, arr) {
+    function theSecondThree(item, index, arr) {
+      const preceedingItems = arr.slice(0, index);
+      return containsThree(preceedingItems);
+    }
+    const foundAt = [1, 1, 2, 3, 3, 3].findIndex(theSecondThree);
+    assert.equal(foundAt, 4);
+  });
+  it('combined with destructuring complex compares become short', function() {
+    const bob = {name: 'Bob'};
+    const alice = {name: 'Alice'};
+  //const foundAt = [bob, alice].findIndex(({name:{length:l}}) => length > 3);
+    const foundAt = [bob, alice].findIndex(({name:{length}}) => length > 3);
+    assert.equal(foundAt, 1);
+  });
+});
+
+// 34: symbol - basics
+// A symbol is a unique and immutable data type and may be used as an identifier for object properties
+// read more at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol
+
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Symbol', function() {
+  it('`Symbol` lives in the global scope', function(){
+  //const expected = someNamespace.Symbol;
+    const expected = Symbol;
+    assert.equal(Symbol, expected);
+  });
+  it('every `Symbol()` is unique', function(){
+    const sym1 = Symbol();
+  //const sym2 = sym1;
+    const sym2 = Symbol();
+    assert.notEqual(sym1, sym2);
+  });
+  it('every `Symbol()` is unique, also with the same parameter', function(){
+    var sym1 = Symbol('foo');
+  //var sym1 = Symbol('foo');
+    var sym2 = Symbol('foo');
+    assert.notEqual(sym1, sym2);
+  });
+  it('`typeof Symbol()` returns "symbol"', function(){
+  //const theType = typeof Symbol;
+    const theType = typeof Symbol('symbol');
+    assert.equal(theType, 'symbol');
+  });
+  it('`new Symbol()` throws an exception, to prevent creation of Symbol wrapper objects', 
+  function(){
+    function fn() {
+    //Symbol();
+      new Symbol();
+    }
+    assert.throws(fn);
+  });
+});
+
+
+// 35: Symbol.for - retrieves or creates a runtime-wide symbol
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('`Symbol.for` for registering Symbols globally', function() {
+  it('creates a new symbol (check via `typeof`)', function() {
+  //const symbolType = Symbol.for('symbol name');
+    const symbolType = typeof Symbol.for('symbol name');
+    assert.equal(symbolType, 'symbol');
+  });
+  it('stores the symbol in a runtime-wide registry and retrieves it from there', function() {
+    const sym = Symbol.for('new symbol'); // added typeof
+    const sym1 = Symbol.for('new symbol'); //added typeof
+    assert.equal(sym, sym1);
+  });
+  it('is different to `Symbol()` which creates a symbol every time and does not store it', function() {
+    var globalSymbol = Symbol.for('new symbol');
+  //var localSymbol = Symbol.for('new symbol');
+    var localSymbol = Symbol('new symbol');
+    assert.notEqual(globalSymbol, localSymbol);
+  });
+  describe('`.toString()` on a Symbol', function() {
+    it('also contains the key given to `Symbol.for()`', function() {
+    //const description = Symbol('').toString();
+      const description = Symbol('new symbol').toString();
+      assert.equal(description, 'Symbol(new symbol)');
+    });
+    describe('NOTE: the description of two different symbols', function() {
+      it('might be the same', function() {
+        const symbol1AsString = Symbol('new symbol 1').toString();
+        const symbol2AsString = Symbol.for('new symbol').toString();
+        assert.equal(symbol1AsString, symbol2AsString);
+      });
+      it('but the symbols are not the same!', function() {
+        const symbol1 = Symbol.for('new symbol 1'); //added the 1 after new symbol
+        const symbol2 = Symbol.for('new symbol');
+        assert.notEqual(symbol1, symbol2);
+      });
+    });    
+  });
+});
+
+// 36: Symbol.keyFor - retrieves a shared symbol key from the global symbol registry
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('`Symbol.keyFor()` gets the symbol key for a given symbol', function() {
+  it('pass the symbol to `keyFor()` and you get its key', function() {
+  //const key = Symbol.____(Symbol.for('foo'));
+    const key = Symbol.keyFor(Symbol.for('foo'));
+    assert.equal(key, 'foo');
+  });
+  it('local symbols are not in the runtime-wide registry', function() {
+    // Hint: `Symbol()` creates a local symbol!
+  //const localSymbol = Symbol.for('foo');
+    const localSymbol = Symbol('foo');
+    const key = Symbol.keyFor(localSymbol);
+    assert.equal(key, void 0);
+  });
+  it('predefined symbols are not in the runtime-wide registry either', function() {
+    const key = Symbol.keyFor(Symbol.iterator);//added lowercase t in iteraTor
+    assert.equal(key, void 0);
+  });
+  it('for non-Symbols throws an error', function() {
+    function fn() {
+    //Symbol.keyFor(Symbol.for('foo'));
+      Symbol(Symbol.for('foo'));
+    }
+    assert.throws(fn);
+  });
+});
+
+// 37: iterator/iterable - array. 
+// The iterator protocol defines a standard way to produce a sequence of values (either finite or infinite).
+// read more at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
+
+// To do: make all tests pass, leave the assert lines unchanged!
+
+describe('array is a built-in iterable object', function() {
+  
+  const arr = ['a', 'B', 'see'];
+
+  describe('the iterator', function() {
+    it('an array has an iterator, which is a function', function() {
+      const iterator = arr[Symbol.iterator];
+      const theType = typeof iterator;
+      const expected = 'function';
+      
+      assert.equal(theType, expected);
+    });
+    
+    it('can be looped with `for-of`, which expects an iterable', function() {
+      let count = 0;
+      for (let value of arr) {
+        count++;
+      }
+      
+      assert.equal(count, arr.length);
+    });
+  });
+
+  describe('the iterator protocol', function() {
+  
+    it('calling `next()` on an iterator returns an object according to the iterator protocol', function() {
+      const iterator = arr[Symbol.iterator]();
+      const firstItem = iterator.next();
+      
+      assert.deepEqual(firstItem, {done: false, value: 'a'});
+    });
+    
+    it('the after-last element has done=true', function() {
+      const arr = [];
+      const iterator = arr[Symbol.iterator]();
+      const afterLast = iterator.next();
+      
+      assert.deepEqual(afterLast, {done: true, value: void 0});
+    });
+    
+  });
+  
+
+  // 38: iterator/iterable - string. 
+// The iterator protocol defines a standard way to produce a sequence of values (either finite or infinite).
+// read more at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
+
+// To do: make all tests pass, leave the assert lines unchanged!
+
+describe('string is a built-in iterable object', function() {
+  
+  const s = 'abc';
+  
+  describe('string is iterable', function() {
+    it('the string`s object key `Symbol.iterator` is a function', function() {
+      const isA = typeof s[Symbol.iterator];
+      assert.equal(isA, 'function');
+    });
+    it('use `Array.from()` to make an array out of any iterable', function(){
+      const arr = Array.from(s);
+      assert.deepEqual(arr, ['a', 'b', 'c']);
+    });
+  });
+  
+  describe('a string`s iterator', function() {
+    let iterator;
+    beforeEach(function() {
+      iterator = s[Symbol.iterator]();
+    });
+    
+    it('has a special string representation', function(){
+      const description = iterator.toString();
+      assert.equal(description, '[object String Iterator]');
+    });
+    
+    it('`iterator.next()` returns an object according to the iterator protocol', function(){
+      const value = iterator.next();
+      assert.deepEqual(value, {done: false, value: 'a'});
+    });
+    
+    it('the after-last call to `iterator.next()` says done=true, no more elements', function(){
+      iterator.next();
+      iterator.next();
+      iterator.next();
+      assert.equal(iterator.next().done, true);
+    });
+  });
+  
+});
+
+
+// 39: iterator - custom. Iterable is a protocol, when implemented allows objects 
+// to customize their iteration behavior, such as what values are looped over in a for..of construct.
+// read more at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
+
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('A simple iterable without items inside, implementing the right protocol', () => {
+
+  function iteratorFunction() {
+    return {
+      next: function(){
+        return {done: true}
+      }
+    }
+  }
+
+  describe('the `iteratorFunction` needs to comply to the iterator protocol', function() {
+    it('must return an object', function() {
+      assert.equal(typeof iteratorFunction(), 'object');
+    });
+    it('the object must have a function assigned to a key `next`', function() {
+      assert.equal(typeof iteratorFunction().next, 'function');
+    });
+    it('calling `next()` must return an object with `{done: true}`', function() {
+      assert.deepEqual(iteratorFunction().next(), {done: true});
+    });
+  });
+
+  let iterable;
+  beforeEach(function() {
+    iterable = {
+      [Symbol.iterator]: iteratorFunction
+    }
+  });
+
+  describe('the iterable', function() {
+    it('must be an object', function() {
+      assert.equal(typeof iterable, 'object');
+    });
+    it('must have the iterator function assigned to the key `Symbol.iterator`', function() {
+      assert.equal(iterable[Symbol.iterator], iteratorFunction);
+    });
+  });
+  
+  describe('using the iterable', function() {
+    it('it contains no values', function() {
+      let values='';
+      for (let value of iterable) {
+        values += value;
+      }
+      assert.equal(values, '');
+    });
+    
+    it('has no `.length` property', function() {
+      const hasLengthProperty = iterable.hasOwnProperty('length');
+      assert.equal(hasLengthProperty, false);
+    });
+    
+    describe('can be converted to an array', function() {
+      it('using `Array.from()`', function() {
+        const arr = Array.from(iterable);
+        assert.equal(Array.isArray(arr), true);
+      });
+      
+      it('where `.length` is still 0', function() {
+        const arr = Array.from(iterable);
+        const length = arr.length;
+        assert.equal(length, 0);
+      });
+    });
+  });
+  
+});
+
+// 40: iterator - one example usage. Build an iterable and use it with some built-in ES6 constructs.
+// To do: make all tests pass, leave the assert lines unchanged!
+
+// Consumable users: 
+// - `consumableUser` contains a consumable user, 
+// - `anyLeft` tells if there is any user left that can be consumed.  
+class ConsumableUsers {
+  constructor() {
+    this.users = ['Alice', 'Bob'];
+    this.empty = false;
+  }
+  get nextUser() {
+    if (this.users.length > 0) {
+      return `user: ${this.users.shift()}`;
+    }
+    this.empty = true;
+    return void 0;
+  }
+  get anyLeft() {
+    return this.empty;
+  }
+}
+
+describe('Iterator usages', () => {
+
+  let usersIterable;
+  beforeEach(function(){
+    const consumableUsers = new ConsumableUsers();
+    function iteratorFunction() {
+      return {
+        next: function() {
+          return {value: consumableUsers.nextUser, done: consumableUsers.anyLeft}
+        }
+      }
+    }
+    
+    usersIterable = {};
+    usersIterable[Symbol.iterator] = iteratorFunction;
+  });
+  
+  describe('create an iterator/iterable', function() {
+    it('the `usersIterable` should be iterable', function() {
+      const isIterable = Symbol.iterator in usersIterable;
+      assert.equal(isIterable, true);
+    });
+    
+    it('the iterator of `usersIterable` should return an object', function() {
+      const iterator = usersIterable[Symbol.iterator]();
+      assert.equal(typeof iterator, 'object');
+    });
+    
+    it('the iterator of `usersIterable` should have a next function', function() {
+      const iterator = usersIterable[Symbol.iterator]();
+      assert.equal(typeof iterator.next, 'function');
+    });
+  });
+  
+  describe('fill the iterable with content using `ConsumableUsers`', function() {
+    
+    describe('using the iterator', function() {
+      let iterator;
+      beforeEach(function(){
+        iterator = usersIterable[Symbol.iterator]();
+      });
+      it('should return `Alice` as first user', function() {
+        const firstItem = iterator.next();
+        assert.deepEqual(firstItem, {value: "user: Alice", done: false});
+      });
+      it('should return `Bob` as second user', function() {
+        iterator.next(); // drop the first item
+        const secondItem = iterator.next();
+        assert.deepEqual(secondItem, {value: "user: Bob", done: false});
+      });
+      it('should return `done:true`, which means there are no more items', function() {
+        iterator.next();
+        iterator.next();
+        const beyondLast = iterator.next();
+        assert.deepEqual(beyondLast, {value: void 0, done: true});
+      })
+    });
+    
+    
+    describe('using built-in constructs', function() {
+      it('use `Array.from()` to convert an iterable to an array', function() {
+        const users = Array.from(usersIterable);
+        assert.deepEqual(users, ['user: Alice', 'user: Bob']);
+      });
+      it('use for-of to loop over an iterable', function() {
+        const users = [];
+        for (let user of usersIterable) users.push(user);
+        assert.deepEqual(users, ['user: Alice', 'user: Bob']);
+      });
+      it('use the spread-operator to convert/add iterable to an array', function() {
+        const users = ['noname', ...usersIterable];
+        assert.deepEqual(users, ['noname', 'user: Alice', 'user: Bob']);
+      });
+      it('destructure an iterable like an array', function() {
+        const [firstUser, secondUser] = usersIterable;
+        assert.equal(firstUser, 'user: Alice');
+        assert.equal(secondUser, 'user: Bob');
+      })
+    });
+  });
+
+});
+});
+
+
+// 49: Generator - creation
+// To do: make all tests pass, leave the assert lines unchanged!
+// Follow the hints of the failure messages!
+
+describe('Generators can be created in multiple ways', function() {
+  it('the most common way is by adding `*` after `function`', function() {
+    //function g() {}
+    function* g() {}
+    assertIsGenerator(g());
+  });
+  it('as a function expression, by adding a `*` after `function`', function() {
+  //let g = function() {};
+    let g = function*() {};
+    assertIsGenerator(g());
+  });
+  it('inside an object by prefixing the function name with `*`', function() {
+    let obj = {
+    //g() {}
+      *g() {}
+    };
+    assertIsGenerator(obj.g());
+  });
+  it('computed generator names, are just prefixed with a `*`', function() {
+    const generatorName = 'g';
+    let obj = {
+    //[generatorName]() {}
+      *[generatorName]() {}
+    };
+    assertIsGenerator(obj.g());
+  });
+  it('inside a class the same way', function() {
+    const generatorName = 'g';
+    class Klazz {
+    //[generatorName]() {}
+      *[generatorName]() {}
+    }
+    assertIsGenerator(new Klazz().g());
+  });
+
+  function assertIsGenerator(gen) {
+    const toStringed = '' + gen;
+    assert.equal(toStringed, '[object Generator]');
+  }
+});
+
+
